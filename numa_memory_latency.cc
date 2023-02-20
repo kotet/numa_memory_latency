@@ -45,7 +45,7 @@ void bench(int tasknode, int memnode)
 {
 	struct timespec ts_begin, ts_end, ts_elapsed;
 
-	printf("bench(task=%d, mem=%d)\n", tasknode, memnode);
+	printf("|%d | %d ", tasknode, memnode);
 
 	if (numa_run_on_node(tasknode) != 0) {
 		printf("failed to run on node: %s\n", strerror(errno));
@@ -73,7 +73,7 @@ void bench(int tasknode, int memnode)
 		ts_elapsed.tv_nsec += 1000*1000*1000;
 	}
 	double elapsed = ts_elapsed.tv_sec + 0.000000001 * ts_elapsed.tv_nsec;
-	printf("took %fsec. %fns/load\n", elapsed, elapsed/(1024*nloop)*(1000*1000*1000));
+	printf("|%f |%f |\n", elapsed, elapsed/(1024*nloop)*(1000*1000*1000));
 	
 	numa_free(buf, bufsize);
 }
@@ -105,8 +105,9 @@ int main(int argc, char* argv[])
 	argc -= optind;
 	argv += optind;
 
+	printf("%d\n",argc);
 	if (argc > 0)
-		bufsize = atoi(argv[2]) * 1024;
+		bufsize = atoi(argv[0]) * 1024;
 	if (argc > 1)
 		nloop = atoi(argv[1]) * 1024;
 
@@ -117,6 +118,8 @@ int main(int argc, char* argv[])
 
 	printf("benchmark bufsize=%zuKiB, nloop=%zuKi\n", bufsize/1024, nloop/1024);
 
+	printf("|tasknode|memnode|total (sec)|nsec per load|\n");
+	printf("|:--|:--|:--|:--|\n");
 	int numnodes = numa_max_node() + 1;
 	for (int tasknode = 0; tasknode < numnodes; ++tasknode) {
 		for (int memnode = 0; memnode < numnodes; ++memnode) {
